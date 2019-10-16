@@ -146,7 +146,7 @@ class BpowServer(object):
                 logger.error(f"Unknown error when setting work future: {e}")
 
             # As we've got work now send cancel command to clients and do a stats update
-            await self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_0)
+            await self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_1)
             logger.info(f"CANCEL: {work_type}/{block_hash}")
         except Exception as e:
             logger.error(f"Unknown error when handling block {block_hash} - {e}")
