@@ -248,7 +248,7 @@ class BpowServer(object):
                 await self.set_client_priority(topics, client)
             await self.database.insert_expire(f"client-lastaction:{client}", "connected", 10)
             await self.database.set_add(f"client_list", client)
-            asyncio.ensure_future(self.client_work_handler(topic, block_hash, work, client))
+            await self.client_work_handler(topic, block_hash, work, client)
             return
         elif topics[0] == 'get_priority':
             logger.info("getting priority")
