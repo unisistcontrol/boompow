@@ -124,9 +124,6 @@ class BpowServer(object):
 
             try:
                 nanolib.validate_work(block_hash, work, difficulty = difficulty or self.DEFAULT_WORK_DIFFICULTY)
-                # As we've got work now send cancel command to clients and do a stats update
-                asyncio.ensure_future(self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_0))
-                logger.info(f"CANCEL: {work_type}/{block_hash}")
             except nanolib.InvalidWork:
                 # logger.debug(f"Client {client} provided invalid work {work} for {block_hash}")
                 return
@@ -134,6 +131,10 @@ class BpowServer(object):
             # Used as a lock - if value already existed, then some other client finished before
             if not await self.database.insert_if_noexist_expire(f"block-lock:{block_hash}", '1', 5):
                 return
+
+            # As we've got work now send cancel command to clients
+            asyncio.ensure_future(self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_1))
+            logger.info(f"CANCEL: {work_type}/{block_hash}")
 
             # Set work result in DB
             await self.database.insert_expire(f"block:{block_hash}", work, BpowServer.BLOCK_EXPIRY)
