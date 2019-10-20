@@ -124,6 +124,9 @@ class BpowServer(object):
 
             try:
                 nanolib.validate_work(block_hash, work, difficulty = difficulty or self.DEFAULT_WORK_DIFFICULTY)
+                # As we've got work now send cancel command to clients and do a stats update
+                asyncio.ensure_future(self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_0))
+                logger.info(f"CANCEL: {work_type}/{block_hash}")
             except nanolib.InvalidWork:
                 # logger.debug(f"Client {client} provided invalid work {work} for {block_hash}")
                 return
@@ -144,10 +147,6 @@ class BpowServer(object):
                 pass
             except Exception as e:
                 logger.error(f"Unknown error when setting work future: {e}")
-
-            # As we've got work now send cancel command to clients and do a stats update
-            await self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_1)
-            logger.info(f"CANCEL: {work_type}/{block_hash}")
         except Exception as e:
             logger.error(f"Unknown error when handling block {block_hash} - {e}")
 
