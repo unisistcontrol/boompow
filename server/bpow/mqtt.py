@@ -78,7 +78,7 @@ class BpowMQTT(object):
                     self.logger.info("MQTT client is connected again")
                     self.ok = True
                 topic, content = message.topic, message.data.decode("utf-8")
-                asyncio.ensure_future(self.callback(topic, content))
+                await self.callback(topic, content)
             except KeyboardInterrupt:
                 return
             except ClientException as e:
