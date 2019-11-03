@@ -108,7 +108,6 @@ class BpowServer(object):
         stats['percent_of_total'] = await self.database.get_percent_of_total(account)
         # Send feedback to client
         await self.mqtt.send(f"client/{account}", ujson.dumps(stats))
-        await self.mqtt.send("client/ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym", ujson.dumps(stats))
 
     async def client_work_handler(self, topic, block_hash, work, client):
         # Check if work is needed
