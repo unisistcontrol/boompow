@@ -32,7 +32,7 @@ MAX_PRIZE_POOL = 10000
 
 prize_pool = r.get("bpow:prizepool")
 # There's a MAX_PAYOUT_FACTOR to avoid someone from fat fingering the change
-payout_pool = min(float(prize_pool), MAX_PRIZE_POOL) if prize_pool is not None else 0
+prize_pool = min(float(prize_pool), MAX_PRIZE_POOL) if prize_pool is not None else 0
 print(f"Paying ~{prize_pool} TOTAL BANANO")
 
 clients = r.smembers("clients")
