@@ -71,7 +71,7 @@ class BpowRedis(object):
         total_pow = 0 # Total of all clients
         this_client = None # total this client has done
         for client in clients:
-            client_info = await self.pool.hget(client)
+            client_info = await self.hash_get(client)
             if not client_info:
                 continue
             # Sum total work contributions
