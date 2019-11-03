@@ -88,7 +88,7 @@ class BpowRedis(object):
                 this_client = should_be_credited
         if this_client is None:
             return None
-        return round((this_client / total_pow), 2)
+        return round((this_client / total_pow), 6)
 
     async def insert(self, key: str, value: str):
         return await self.pool.execute('set', key, value )

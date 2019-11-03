@@ -117,7 +117,7 @@ for client in clients:
     clients_to_evaluate.append(client_stats)
 
 for c in clients_to_evaluate:
-    percent_of_total = round(c.pow_delta / total_pows, 2)
+    percent_of_total = round(c.pow_delta / total_pows, 6)
     payment_amount = round(percent_of_total * prize_pool, 2)
     if payment_amount <= 0:
         continue
