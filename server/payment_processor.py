@@ -119,7 +119,9 @@ for client in clients:
 for c in clients_to_evaluate:
     percent_of_total = round(c.pow_delta / total_pows, 2)
     payment_amount = round(percent_of_total * prize_pool, 2)
-    logger.info(f"Sending {payment_amount} ({percent_of_total}%) to {client}")
+    if payment_amount <= 0:
+        continue
+    logger.info(f"Sending {payment_amount} ({percent_of_total * 100}%) to {client}")
     if not args.dry_run:
         send_resp = send(client, payment_amount)
         if send_resp is not None:
