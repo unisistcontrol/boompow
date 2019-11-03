@@ -65,7 +65,7 @@ class BpowRedis(object):
         )
 
     async def get_percent_of_total(self, in_client: str) -> float:
-        """Get what % this client has contributed"""
+        """Get what % this client has contributed towards the overall total"""
         clients = await self.set_members("clients")
         clients = {c for c in clients}
         total_pow = 0 # Total of all clients

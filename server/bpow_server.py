@@ -104,6 +104,8 @@ class BpowServer(object):
         stats['block_rewarded'] = block_rewarded
         # Add payment factor
         stats['payment_factor'] = await self.database.get_payment_factor()
+        # Add percentage earned
+        stats['percent_of_total'] = await self.database.get_percent_of_total(account)
         # Send feedback to client
         await self.mqtt.send(f"client/{account}", ujson.dumps(stats))
 
