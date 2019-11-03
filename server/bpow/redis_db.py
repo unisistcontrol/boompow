@@ -64,6 +64,32 @@ class BpowRedis(object):
             }
         )
 
+    async def get_percent_of_total(self, in_client: str) -> float:
+        """Get what % this client has contributed"""
+        clients = await self.set_members("clients")
+        clients = {c for c in clients}
+        total_pow = 0 # Total of all clients
+        this_client = None # total this client has done
+        for client in clients:
+            client_info = await self.pool.hget(client)
+            if not client_info:
+                continue
+            # Sum total work contributions
+            total_works = 0
+            total_works += int(client_info['precache']) if 'precache' in client_info else 0
+            total_works += int(client_info['ondemand']) if 'ondemand' in client_info else 0
+            # Get how many pows this client has already been paid for
+            total_credited = int(client_info['total_credited']) if 'total_credited' in client_info else 0
+
+            # Get how many this client has done in this cycle
+            should_be_credited = total_works - total_credited
+            total_pow += should_be_credited
+            if client == in_client:
+                this_client = None
+        if this_client is None:
+            return None
+        return round((this_client / total_pow), 2)
+
     async def insert(self, key: str, value: str):
         return await self.pool.execute('set', key, value )
 

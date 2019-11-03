@@ -16,24 +16,24 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--node', type=str, default='http://[::1]:7072')
 parser.add_argument('--wallet', type=str, help="BANANO node wallet.", default='522B56D9021982C1D99AF5AC155F148C66C717BC29A34662D6BDB07A0B0812C2')
 parser.add_argument('--account', type=str, help='Account from which to send funds.', default='ban_1boompow14irck1yauquqypt7afqrh8b6bbu5r93pc6hgbqs7z6o99frcuym')
-parser.add_argument('--set-payout-factor', type=float, help='Change payment factor', default=None)
+parser.add_argument('--set-prize-pool', type=int, help='Set prize pool amount', default=None)
 parser.add_argument('--dry_run', action='store_true', help='Perform everything except sending funds, for debugging.')
 args = parser.parse_args()
 
-if args.set_payout_factor:
-    print(f"Setting payout factor to {args.set_payout_factor}")
-    r.set("bpow:paymentfactor", str(args.set_payout_factor))
+if args.set_prize_pool:
+    print(f"Setting prize pool to {args.set_prize_pool}")
+    r.set("bpow:prizepool", str(args.set_prize_pool))
     exit(0)
 elif not Validations.validate_address(args.account):
     print("Invalid payout address specified")
     exit(1)
 
-MAX_PAYOUT_FACTOR = 0.5
+MAX_PRIZE_POOL = 10000
 
-payout_factor = r.get("bpow:paymentfactor")
+prize_pool = r.get("bpow:prizepool")
 # There's a MAX_PAYOUT_FACTOR to avoid someone from fat fingering the change
-payout_factor = min(float(payout_factor), MAX_PAYOUT_FACTOR) if payout_factor is not None else 0
-print(f"Paying {payout_factor} BANANO per PoW")
+payout_pool = min(float(prize_pool), MAX_PRIZE_POOL) if prize_pool is not None else 0
+print(f"Paying ~{prize_pool} TOTAL BANANO")
 
 clients = r.smembers("clients")
 clients = {c for c in clients}
@@ -60,6 +60,14 @@ def communicate_wallet(wallet_command) -> dict:
     except requests.exceptions.RequestException:
         return None
 
+class ClientStats():
+    def __init__(self, client: str, total_pows: int, pow_delta: int, total_paid: float):
+        self.client = client
+        self.total_pows = total_pows
+        self.total_paid = total_paid
+        self.pow_delta = pow_delta
+
+
 def send(destination : str, amount_ban : float) -> str:
     """Send amount to destination, return hash. None if failed"""
     expanded = float(amount_ban) * 100
@@ -76,6 +84,8 @@ def send(destination : str, amount_ban : float) -> str:
         return resp['block']
     return None
 
+total_pows = 0
+clients_to_evaluate = []
 for client in clients:
     if not Validations.validate_address(client):
         logger.info(f"!Skipping client '{client}' as it is an invalid BANANO account!\n\n")
@@ -83,9 +93,8 @@ for client in clients:
     client_info = r.hgetall(f"client:{client}")
     if not client_info:
         continue
-    logger.info(f"Processing payments for {client}")
 
-    # Sum total work contributions
+    # Sum total work contributions for  this client
     total_works = 0
     total_works += int(client_info['precache']) if 'precache' in client_info else 0
     total_works += int(client_info['ondemand']) if 'ondemand' in client_info else 0
@@ -94,32 +103,35 @@ for client in clients:
     total_credited = int(client_info['total_credited']) if 'total_credited' in client_info else 0
     total_paid = float(client_info['total_paid']) if 'total_paid' in client_info else 0.0
 
-    # Get how many this client should be paid for
-    should_be_credited = total_works - total_credited
+    # Get how many pow this client has contributed in this current cycle
+    total_pow_client = total_works - total_credited
+    total_pows += total_pow_client
 
-    if should_be_credited < 0:
+    if total_pow_client < 0:
         logger.error(f"Skipping client, bad state: client has total_works < total_credited {client}")
         continue
-    elif should_be_credited == 0:
+    elif total_pow_client == 0:
         continue
 
-    payment_amount = should_be_credited * payout_factor
+    client_stats = ClientStats(client, total_works, total_pow_client, total_paid)
+    clients_to_evaluate.append(client_stats)
 
-    logger.info(f"Paying {payment_amount} to {client} for {should_be_credited} PoWs")
-
-    if args.dry_run:
-        final_payout_sum += payment_amount
-        logger.info("Dry run, not processing payment")
-        continue
-
-    send_resp = send(client, payment_amount)
-    if send_resp is not None:
-        r.hset(f"client:{client}", 'total_credited', str(total_works))
-        r.hset(f"client:{client}", 'total_paid', str(payment_amount + total_paid))
-        final_payout_sum += payment_amount
-        logger.info(f"Block Hash: {send_resp}")
+for c in clients_to_evaluate:
+    percent_of_total = round(c.pow_delta / total_pows, 2)
+    payment_amount = round(percent_of_total * prize_pool, 2)
+    logger.info(f"Sending {payment_amount} ({percent_of_total}%) to {client}")
+    if not args.dry_run:
+        send_resp = send(client, payment_amount)
+        if send_resp is not None:
+            r.hset(f"client:{client}", 'total_credited', str(c.total_pows))
+            r.hset(f"client:{client}", 'total_paid', str(payment_amount + c.total_paid))
+            final_payout_sum += payment_amount
+            logger.info(f"Block Hash: {send_resp}")
+        else:
+            logger.error("PAYMENT FAILED, RPC SEND RETURNED NULL")
     else:
-        logger.error("PAYMENT FAILED, RPC SEND RETURNED NULL")
+        logger.info("Skipping, dry run")
+        final_payout_sum  += payment_amount
 
 total_paid_db = r.get('bpow:totalrewards')
 total_paid_db = float(total_paid_db) if total_paid_db is not None else 0.0
