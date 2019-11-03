@@ -85,7 +85,7 @@ class BpowRedis(object):
             should_be_credited = total_works - total_credited
             total_pow += should_be_credited
             if client == in_client:
-                this_client = None
+                this_client = should_be_credited
         if this_client is None:
             return None
         return round((this_client / total_pow), 2)
