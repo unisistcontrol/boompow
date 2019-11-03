@@ -121,12 +121,12 @@ for c in clients_to_evaluate:
     payment_amount = round(percent_of_total * prize_pool, 2)
     if payment_amount <= 0:
         continue
-    logger.info(f"Sending {payment_amount} ({percent_of_total * 100}%) to {client}")
+    logger.info(f"Sending {payment_amount} ({percent_of_total * 100}%) to {c.client}")
     if not args.dry_run:
-        send_resp = send(client, payment_amount)
+        send_resp = send(c.client, payment_amount)
         if send_resp is not None:
-            r.hset(f"client:{client}", 'total_credited', str(c.total_pows))
-            r.hset(f"client:{client}", 'total_paid', str(payment_amount + c.total_paid))
+            r.hset(f"client:{c.client}", 'total_credited', str(c.total_pows))
+            r.hset(f"client:{c.client}", 'total_paid', str(payment_amount + c.total_paid))
             final_payout_sum += payment_amount
             logger.info(f"Block Hash: {send_resp}")
         else:
