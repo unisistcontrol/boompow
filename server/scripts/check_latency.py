@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 import json
 from time import perf_counter
 
-host = "bpow.banano.cc"
+host = "bpow.appditto.com"
 works = dict()
 
 # The callback for when the client receives a CONNACK response from the server.

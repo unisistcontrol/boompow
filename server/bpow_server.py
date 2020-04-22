@@ -577,7 +577,7 @@ def main():
     app_ws = web.Application(middlewares=[web.normalize_path_middleware()])
     app_ws.router.add_get('/service_ws/', server.service_ws_handler)
     handler_ws = app_ws.make_handler()
-    coroutine_ws = loop.create_server(handler_ws, "127.0.0.1", 5035)
+    coroutine_ws = loop.create_server(handler_ws, "0.0.0.0" if config.external else "127.0.0.1", 5035)
     server_ws = loop.run_until_complete(coroutine_ws)
 
     # endpoint for checking if server is up
@@ -585,7 +585,7 @@ def main():
     upcheck_handler = lambda request: web.Response(text="up")
     app_upcheck.router.add_get('/upcheck/', upcheck_handler)
     handler_upcheck = app_upcheck.make_handler()
-    coroutine_upcheck = loop.create_server(handler_upcheck, "127.0.0.1", 5031)
+    coroutine_upcheck = loop.create_server(handler_upcheck, "0.0.0.0" if config.external else "127.0.0.1", 5031)
     server_upcheck = loop.run_until_complete(coroutine_upcheck)
 
 
@@ -596,9 +596,9 @@ def main():
     app_services.router.add_post('/service/', server.service_post_handler)
     try:
         if config.web_path:
-            web.run_app(app_services, host="127.0.0.1", port=5030, path=config.web_path)
+            web.run_app(app_services, host="0.0.0.0" if config.external else "127.0.0.1", port=5030, path=config.web_path)
         else:
-            web.run_app(app_services, host="127.0.0.1", port=5030)
+            web.run_app(app_services, host="0.0.0.0" if config.external else "127.0.0.1", port=5030)
     except KeyboardInterrupt:
         loop.stop()
     finally:

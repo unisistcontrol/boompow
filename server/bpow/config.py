@@ -5,6 +5,7 @@ class BpowConfig(object):
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('--web_path', type=str, default='', help='Web server path')
+        parser.add_argument('--external', action='store_true', 'Run servers externally - on 0.0.0.0')
         parser.add_argument('--use_websocket', action='store_true', help="If enabled, will get blocks via websocket and not callback")
         parser.add_argument('--websocket_uri', type=str, default='ws://[::1]:7078', help="The Node (v19+) websocket server URI")
         parser.add_argument('--mqtt_uri', type=str, default='mqtt://localhost:1883', help="MQTT broker URI")
@@ -17,3 +18,4 @@ class BpowConfig(object):
         self.websocket_uri = args.websocket_uri
         self.mqtt_uri = args.mqtt_uri
         self.debug = args.debug
+        self.external = args.external
