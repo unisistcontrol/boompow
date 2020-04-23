@@ -6,7 +6,7 @@ import hashlib
 import os
 from getpass import getpass
 
-r = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=2)
+r = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), port=6379, db=3)
 
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group(required=True)

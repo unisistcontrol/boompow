@@ -13,7 +13,7 @@ class BpowRedis(object):
             server,
             minsize=5, maxsize=15,
             loop=loop,
-            db=2
+            db=3
         )
 
     async def setup(self):
