@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: boompow
-        image: bananocoin/boompow:1.0
+        image: replaceme
         imagePullPolicy: Always
         command: ["/bin/bash", "-c"]
         args: ["python bpow_server.py --external --use_websocket --log-to-stdout --websocket_uri ws://nano-node.nano:7078 --mqtt_uri mqtt://${MQTT_USER}:${MQTT_PASSWORD}@broker-internal.mosquitto:1883"]
