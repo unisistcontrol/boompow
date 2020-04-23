@@ -21,7 +21,7 @@ jobs:
 
       - name: Build and tag
         if: success()
-        run: docker build -t bananocoin/boompow:${BRANCH_NAME}-${{ env.GITHUB_RUN_ID }} .
+        run: docker build -t bananocoin/boompow:${BRANCH_NAME}-${{ env.GITHUB_RUN_ID }} server
 
       - name: Push image   
         if: success()

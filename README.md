@@ -1,5 +1,7 @@
 # BoomPow (bPow)
 
+[![License](https://img.shields.io/github/license/BananoCoin/boompow)](https://github.com/BananoCoin/boompow/blob/master/LICENSE) [![CI](https://github.com/BananoCoin/boompow/workflows/CI/badge.svg)](https://github.com/BananoCoin/boompow/actions?query=workflow%3ACI)
+
 This is [BANANO](https://banano.cc)'s peel of the distributed proof of work ([DPoW](https://github.com/guilhermelawless/nano-dpow)) system created by the Nano community. Special thanks to [Guilherme Lawless](https://github.com/guilhermelawless), [James Coxon](https://github.com/jamescoxon), and everybody else who has worked on creating the DPoW system.
 
 ## What is It?
