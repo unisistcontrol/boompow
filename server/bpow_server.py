@@ -10,6 +10,7 @@ import hashlib
 import asyncio
 import uvloop
 import nanolib
+import os
 from collections import defaultdict
 from asyncio_throttle import Throttler
 from aiohttp import web, WSMsgType
@@ -19,7 +20,7 @@ from random import randint
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 loop = asyncio.get_event_loop()
 config = BpowConfig()
-logger = get_logger()
+logger = get_logger(stdout=config.stdout_log)
 
 
 def hash_key(x: str):
@@ -42,7 +43,7 @@ class BpowServer(object):
         self.work_futures = dict()
         self.next_queue = 1
         self.service_throttlers = defaultdict(lambda: Throttler(rate_limit=BpowServer.MAX_SERVICE_REQUESTS_PER_SECOND*10, period=10))
-        self.database = BpowRedis("redis://localhost", loop)
+        self.database = BpowRedis(f"redis://{os.getenv('REDIS_HOST', 'localhost')}", loop)
         self.mqtt = BpowMQTT(config.mqtt_uri, loop, self.client_handler, self.database, logger=logger)
         if config.use_websocket:
             self.websocket = WebsocketClient(config.websocket_uri, self.block_arrival_ws_handler, logger=logger)

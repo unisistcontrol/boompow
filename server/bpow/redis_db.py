@@ -12,7 +12,8 @@ class BpowRedis(object):
         self.pool = aioredis.create_pool(
             server,
             minsize=5, maxsize=15,
-            loop=loop
+            loop=loop,
+            db=2
         )
 
     async def setup(self):

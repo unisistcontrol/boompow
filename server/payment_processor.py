@@ -5,12 +5,13 @@ import argparse
 import redis
 import requests
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler, WatchedFileHandler
 from collections import defaultdict
 from datetime import datetime
 from bpow import Validations
 
-r = redis.StrictRedis(host="localhost", port=6379, decode_responses=True)
+r = redis.Redis(host=os.getenv("REDIS_HOST", "localhost"), db=2, port=6379, decode_responses=True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--node', type=str, default='http://[::1]:7072')
