@@ -49,6 +49,10 @@ class BpowServer(object):
             self.websocket = WebsocketClient(config.websocket_uri, self.block_arrival_ws_handler, logger=logger)
         else:
             self.websocket = None
+        if config.use_nano_websocker:
+            self.nano_ws = WebsocketClient(config.nano_websocket_uri, self.block_arrival_ws_handler_nano, logger=logger)
+        else:
+            self.nano_ws = None
 
     async def setup(self):
         await asyncio.gather(
@@ -57,6 +61,8 @@ class BpowServer(object):
         )
         if self.websocket:
             await self.websocket.setup()
+        if self.nano_ws:
+            await self.nano_ws.setup()
         loop.create_task(self.mqtt.client_check())
 
     async def close(self):
@@ -66,6 +72,8 @@ class BpowServer(object):
         )
         if self.websocket:
             await self.websocket.close()
+        if self.nano_ws:
+            await self.nano_ws.close()
 
     async def loop(self):
         aws = [
@@ -75,6 +83,8 @@ class BpowServer(object):
         ]
         if self.websocket:
             aws.append(self.websocket.loop())
+        if self.nano_ws:
+            aws.append(self.nano_ws.loop())
         await asyncio.gather(*aws)
 
     @asyncio.coroutine
@@ -335,6 +345,15 @@ class BpowServer(object):
             # previous might not exist - open block
             block_hash, account, previous = data['hash'], data['account'], data['block'].get('previous', None)
             await self.block_arrival_handler(block_hash, account, previous)
+        except Exception as e:
+            logger.error(f"Unable to process block: {e}\nData:\n{data}")
+            logger.error(traceback.format_exc())
+
+    async def block_arrival_ws_handler_nano(self, data):
+        try:
+            # previous might not exist - open block
+            block_hash, account, previous = data['hash'], data['account'], data['block'].get('previous', None)
+            await self.block_arrival_handler(block_hash, account, previous, difficulty='ffffffc000000000')
         except Exception as e:
             logger.error(f"Unable to process block: {e}\nData:\n{data}")
             logger.error(traceback.format_exc())
