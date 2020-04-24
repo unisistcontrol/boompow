@@ -467,7 +467,7 @@ class BpowServer(object):
                     queue = await self.get_next_queue()
                     await self.mqtt.send(f"work/ondemand/{queue}", f"{block_hash},{difficulty}", qos=QOS_0)
 
-                timeout = data.get('timeout', 5)
+                timeout = data.get('timeout', 10)
                 try:
                     timeout = int(timeout)
                     if timeout < 1 or timeout > 30:
