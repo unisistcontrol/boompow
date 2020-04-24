@@ -69,7 +69,6 @@ class BpowMQTT(object):
             self.logger.critical(f"Error while publishing to MQTT: {e}")
             self.ok = False
 
-    @asyncio.coroutine
     async def message_receive_loop(self):
         while 1:
             try:
@@ -91,7 +90,6 @@ class BpowMQTT(object):
                     return
                 self.logger.critical(f"Unknown exception: {e}")
 
-    @asyncio.coroutine
     async def heartbeat_loop(self):
         while 1:
             try:

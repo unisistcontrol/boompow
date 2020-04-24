@@ -87,7 +87,6 @@ class BpowServer(object):
             aws.append(self.nano_ws.loop())
         await asyncio.gather(*aws)
 
-    @asyncio.coroutine
     async def statistics_loop(self):
         try:
             while 1:
@@ -358,7 +357,6 @@ class BpowServer(object):
             logger.error(f"Unable to process block: {e}\nData:\n{data}")
             logger.error(traceback.format_exc())
 
-    @asyncio.coroutine
     async def block_arrival_cb_handler(self, request):
         try:
             data = await request.json(loads=ujson.loads)
@@ -370,7 +368,6 @@ class BpowServer(object):
             logger.error(traceback.format_exc())
         return web.Response()
 
-    @asyncio.coroutine
     async def block_arrival_cb_handler_nano(self, request):
         try:
             data = await request.json(loads=ujson.loads)
@@ -507,7 +504,6 @@ class BpowServer(object):
 
         return response
 
-    @asyncio.coroutine
     async def service_ws_handler(self, request):
         ws = web.WebSocketResponse()
         await ws.prepare(request)
@@ -542,7 +538,6 @@ class BpowServer(object):
         # logger.info('websocket connection closed')
         return ws
 
-    @asyncio.coroutine
     async def service_post_handler(self, request):
         request_id = None
         try:
