@@ -49,7 +49,7 @@ class BpowServer(object):
             self.websocket = WebsocketClient(config.websocket_uri, self.block_arrival_ws_handler, logger=logger)
         else:
             self.websocket = None
-        if config.use_nano_websocker:
+        if config.use_nano_websocket:
             self.nano_ws = WebsocketClient(config.nano_websocket_uri, self.block_arrival_ws_handler_nano, logger=logger)
         else:
             self.nano_ws = None
