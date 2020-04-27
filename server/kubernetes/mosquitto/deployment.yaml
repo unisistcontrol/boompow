@@ -47,6 +47,10 @@ spec:
       - name: secrets
         secret:
           secretName: passwd
+      securityContext:
+        runAsUser: 1883
+        runAsGroup: 1883
+        fsGroup: 1883
   volumeClaimTemplates:
   - metadata:
       name: data
