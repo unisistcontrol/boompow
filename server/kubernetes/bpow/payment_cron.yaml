@@ -15,6 +15,8 @@ spec:
             command: ["/bin/bash", "-c"]
             args: ["python payment_processor.py --node http://pippin-banano.pippin:11338 --wallet ${WALLET_ID}"]
             env:
+              - name: REDIS_HOST
+                value: redis-0.redis
               - name: WALLET_ID
                 valueFrom:
                   secretKeyRef:
