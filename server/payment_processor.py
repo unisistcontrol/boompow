@@ -6,7 +6,6 @@ import redis
 import requests
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler, WatchedFileHandler
 from collections import defaultdict
 from datetime import datetime
 from bpow import Validations
@@ -46,11 +45,10 @@ LOG_FILE = '/tmp/bpow_payments.log'
 logger = logging.getLogger()
 def setup_logger():
     logging.basicConfig(level=logging.INFO)
-    handler = WatchedFileHandler(LOG_FILE)
+    handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s@%(funcName)s:%(lineno)s", "%Y-%m-%d %H:%M:%S %z")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    logger.addHandler(TimedRotatingFileHandler(LOG_FILE, when="d", interval=1, backupCount=100))
 
 setup_logger()
 
