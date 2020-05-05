@@ -423,12 +423,7 @@ class BpowServer(object):
 
             #Check if hash in redis db, if so return work
             work = await self.database.get(f"block:{block_hash}")
-            if work is not None and work != BpowServer.WORK_PENDING and difficulty is not None:
-                try:
-                    nanolib.validate_work(block_hash, work, difficulty=difficulty)
-                except nanolib.InvalidWork:
-                    work = None
-
+           
             if work is None:
                 # Set incomplete work
                 await self.database.insert_expire(f"block:{block_hash}", BpowServer.WORK_PENDING, BpowServer.BLOCK_EXPIRY)
