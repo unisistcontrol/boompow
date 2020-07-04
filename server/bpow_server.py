@@ -349,6 +349,7 @@ class BpowServer(object):
             logger.error(traceback.format_exc())
 
     async def block_arrival_ws_handler_nano(self, data):
+        return
         try:
             # previous might not exist - open block
             block_hash, account, previous = data['hash'], data['account'], data['block'].get('previous', None)
@@ -369,6 +370,7 @@ class BpowServer(object):
         return web.Response()
 
     async def block_arrival_cb_handler_nano(self, request):
+        return
         try:
             data = await request.json(loads=ujson.loads)
             # previous might not exist - open block
