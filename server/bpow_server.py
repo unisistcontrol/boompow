@@ -421,7 +421,8 @@ class BpowServer(object):
             if difficulty:
                 difficulty_multiplier = nanolib.work.derive_work_multiplier(difficulty, base_difficulty='fffffff800000000')
                 if difficulty_multiplier > BpowServer.MAX_DIFFICULTY_MULTIPLIER:
-                    raise InvalidRequest(f"Difficulty too high. Requested: {difficulty} with multiplier {difficulty_multiplier}, Maximum: {nanolib.work.derive_work_difficulty(BpowServer.MAX_DIFFICULTY_MULTIPLIER, base_difficulty='fffffff800000000')} ( {BpowServer.MAX_DIFFICULTY_MULTIPLIER} multiplier )")
+                    difficulty = nanolib.work.derive_work_difficulty(BpowServer.MAX_DIFFICULTY_MULTIPLIER, base_difficulty='fffffff800000000')
+                    difficulty_multiplier = BpowServer.MAX_DIFFICULTY_MULTIPLIER
 
             #Check if hash in redis db, if so return work
             work = await self.database.get(f"block:{block_hash}")
