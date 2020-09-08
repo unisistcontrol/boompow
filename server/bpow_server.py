@@ -340,6 +340,7 @@ class BpowServer(object):
             await asyncio.gather (*aws)
 
     async def block_arrival_ws_handler(self, data):
+        return
         try:
             # previous might not exist - open block
             block_hash, account, previous = data['hash'], data['account'], data['block'].get('previous', None)
