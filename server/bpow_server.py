@@ -168,11 +168,13 @@ class BpowServer(object):
             return
 
         # Account information and DB update
-        await asyncio.gather(
-            self.client_update(client, work_type, block_hash),
-            self.database.increment(f"stats:{work_type}"),
-            self.database.set_add(f"clients", client)
-        )
+        doreward = await self.database.get(f"doreward:{block_hash}")
+        if doreward != "no":
+            await asyncio.gather(
+                self.client_update(client, work_type, block_hash),
+                self.database.increment(f"stats:{work_type}"),
+                self.database.set_add(f"clients", client)
+            )
 
     async def get_lowest_queues(self, num_queues):
         logger.info("getting lowest queue")
@@ -401,6 +403,9 @@ class BpowServer(object):
             block_hash = data['hash']
             account = data.get('account', None)
             difficulty = data.get('difficulty', None)
+            reward = data.get("reward", True)
+            if not isinstance(reward, bool):
+                reward = True
 
             try:
                 block_hash = nanolib.validate_block_hash(block_hash)
@@ -427,6 +432,8 @@ class BpowServer(object):
             work = await self.database.get(f"block:{block_hash}")
            
             if work is None:
+                # Set reward
+                await self.database.insert_expire(f"doreward:{block_hash}", "yes" if reward else "no", 500)
                 # Set incomplete work
                 await self.database.insert_expire(f"block:{block_hash}", BpowServer.WORK_PENDING, BpowServer.BLOCK_EXPIRY)
 
