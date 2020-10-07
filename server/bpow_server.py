@@ -34,7 +34,7 @@ class BpowServer(object):
     BLOCK_EXPIRY = 4*30*24*60*60 # approximately 4 months
     ACCOUNT_EXPIRY = 365*24*60*60 # approximately 1 year
     DIFFICULTY_EXPIRY = 2*60
-    MAX_DIFFICULTY_MULTIPLIER = 8.0
+    MAX_DIFFICULTY_MULTIPLIER = 1.5
     FORCE_ONDEMAND_THRESHOLD = 0.8 # <= 1
     MAX_SERVICE_REQUESTS_PER_SECOND = 10
     DEFAULT_WORK_DIFFICULTY = 'fffffe0000000000'
@@ -342,6 +342,7 @@ class BpowServer(object):
             await asyncio.gather (*aws)
 
     async def block_arrival_ws_handler(self, data):
+        return
         try:
             # previous might not exist - open block
             block_hash, account, previous = data['hash'], data['account'], data['block'].get('previous', None)
@@ -377,7 +378,7 @@ class BpowServer(object):
             data = await request.json(loads=ujson.loads)
             # previous might not exist - open block
             block_hash, account, previous = data['hash'], data['account'], ujson.loads(data['block']).get('previous', None)
-            await self.block_arrival_handler(block_hash, account, previous, difficulty='ffffffc000000000')
+            await self.block_arrival_handler(block_hash, account, previous, difficulty='fffffff800000000')
         except Exception as e:
             logger.error(f"Unable to process block: {e}\nData:\n{data}")
             logger.error(traceback.format_exc())
@@ -424,9 +425,10 @@ class BpowServer(object):
                 raise InvalidRequest("Difficulty too low")
 
             if difficulty:
-                difficulty_multiplier = nanolib.work.derive_work_multiplier(difficulty, base_difficulty='ffffffc000000000')
+                difficulty_multiplier = nanolib.work.derive_work_multiplier(difficulty, base_difficulty='fffffff800000000')
                 if difficulty_multiplier > BpowServer.MAX_DIFFICULTY_MULTIPLIER:
-                    raise InvalidRequest(f"Difficulty too high. Requested: {difficulty} with multiplier {difficulty_multiplier}, Maximum: {nanolib.work.derive_work_difficulty(BpowServer.MAX_DIFFICULTY_MULTIPLIER, base_difficulty='ffffffc000000000')} ( {BpowServer.MAX_DIFFICULTY_MULTIPLIER} multiplier )")
+                    difficulty = nanolib.work.derive_work_difficulty(BpowServer.MAX_DIFFICULTY_MULTIPLIER, base_difficulty='fffffff800000000')
+                    difficulty_multiplier = BpowServer.MAX_DIFFICULTY_MULTIPLIER
 
             #Check if hash in redis db, if so return work
             work = await self.database.get(f"block:{block_hash}")
@@ -441,7 +443,7 @@ class BpowServer(object):
             if work and work != BpowServer.WORK_PENDING:
                 work_type = "precache"
                 if difficulty:
-                    precached_multiplier = nanolib.work.derive_work_multiplier(hex(nanolib.work.get_work_value(block_hash, work))[2:], base_difficulty='ffffffc000000000')
+                    precached_multiplier = nanolib.work.derive_work_multiplier(hex(nanolib.work.get_work_value(block_hash, work))[2:], base_difficulty='fffffff800000000')
                     if precached_multiplier < difficulty_multiplier:
                         # Force ondemand since the precache difficulty is not close enough to requested difficulty
                         work_type = "ondemand"
