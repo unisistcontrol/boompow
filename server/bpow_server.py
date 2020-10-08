@@ -439,6 +439,9 @@ class BpowServer(object):
                 # Set incomplete work
                 await self.database.insert_expire(f"block:{block_hash}", BpowServer.WORK_PENDING, BpowServer.BLOCK_EXPIRY)
 
+            if service in ["tixwallet", "bananovault", "natrium", "kalium"]:
+                await self.database.insert_expire(f"doreward:{block_hash}", "no", 500)
+
             work_type = "ondemand"
             if work and work != BpowServer.WORK_PENDING:
                 work_type = "precache"
