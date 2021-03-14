@@ -18,7 +18,7 @@ spec:
         image: replaceme
         imagePullPolicy: Always
         command: ["/bin/bash", "-c"]
-        args: ["python bpow_server.py --external --use_websocket --use_nano_websocket --log-to-stdout --websocket_uri ws://banano-node.banano:7074 --nano_websocket_uri ws://nano-node.nano:7078 --mqtt_uri mqtt://${MQTT_USER}:${MQTT_PASSWORD}@broker-internal.mosquitto:1883"]
+        args: ["python bpow_server.py --external --log-to-stdout --websocket_uri ws://banano-node.banano:7074 --nano_websocket_uri ws://10.98.0.6:7078 --mqtt_uri mqtt://${MQTT_USER}:${MQTT_PASSWORD}@broker-internal.mosquitto:1883"]
         ports:
         - containerPort: 5035
           name: servicews
