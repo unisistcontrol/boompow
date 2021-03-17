@@ -34,7 +34,7 @@ class BpowServer(object):
     BLOCK_EXPIRY = 4*30*24*60*60 # approximately 4 months
     ACCOUNT_EXPIRY = 365*24*60*60 # approximately 1 year
     DIFFICULTY_EXPIRY = 2*60
-    MAX_DIFFICULTY_MULTIPLIER = 8.0
+    MAX_DIFFICULTY_MULTIPLIER = 512.0
     FORCE_ONDEMAND_THRESHOLD = 0.8 # <= 1
     MAX_SERVICE_REQUESTS_PER_SECOND = 10
     DEFAULT_WORK_DIFFICULTY = 'fffffe0000000000'
@@ -362,6 +362,7 @@ class BpowServer(object):
             logger.error(traceback.format_exc())
 
     async def block_arrival_cb_handler(self, request):
+        return
         try:
             data = await request.json(loads=ujson.loads)
             # previous might not exist - open block
@@ -425,9 +426,9 @@ class BpowServer(object):
                 raise InvalidRequest("Difficulty too low")
 
             if difficulty:
-                difficulty_multiplier = nanolib.work.derive_work_multiplier(difficulty, base_difficulty='fffffff800000000')
+                difficulty_multiplier = nanolib.work.derive_work_multiplier(difficulty, base_difficulty='fffffe0000000000')
                 if difficulty_multiplier > BpowServer.MAX_DIFFICULTY_MULTIPLIER:
-                    difficulty = nanolib.work.derive_work_difficulty(BpowServer.MAX_DIFFICULTY_MULTIPLIER, base_difficulty='fffffff800000000')
+                    difficulty = nanolib.work.derive_work_difficulty(BpowServer.MAX_DIFFICULTY_MULTIPLIER, base_difficulty='fffffe0000000000')
                     difficulty_multiplier = BpowServer.MAX_DIFFICULTY_MULTIPLIER
 
             #Check if hash in redis db, if so return work
@@ -446,7 +447,7 @@ class BpowServer(object):
             if work and work != BpowServer.WORK_PENDING:
                 work_type = "precache"
                 if difficulty:
-                    precached_multiplier = nanolib.work.derive_work_multiplier(hex(nanolib.work.get_work_value(block_hash, work))[2:], base_difficulty='fffffff800000000')
+                    precached_multiplier = nanolib.work.derive_work_multiplier(hex(nanolib.work.get_work_value(block_hash, work))[2:], base_difficulty='fffffe0000000000')
                     if precached_multiplier < difficulty_multiplier:
                         # Force ondemand since the precache difficulty is not close enough to requested difficulty
                         work_type = "ondemand"
