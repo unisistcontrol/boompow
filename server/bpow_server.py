@@ -136,7 +136,7 @@ class BpowServer(object):
 
             try:
                 nanolib.validate_work(block_hash, work, difficulty = difficulty or self.DEFAULT_WORK_DIFFICULTY)
-            except nanolib.InvalidWork:
+            except (nanolib.InvalidWork, Exception):
                 # logger.debug(f"Client {client} provided invalid work {work} for {block_hash}")
                 return
 

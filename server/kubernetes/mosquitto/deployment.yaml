@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: broker
-        image: eclipse-mosquitto:1.6.9
+        image: eclipse-mosquitto:2.0.9
         ports:
         - containerPort: 1883
           name: mqtt

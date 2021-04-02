@@ -5,9 +5,9 @@ metadata:
   namespace: mosquitto
 data:
   mosquitto.conf: |
-    pid_file /var/run/mosquitto.pid
+    pid_file /mosquitto/data/mosquitto.pid
 
-    persistence true
+    persistence false
     persistence_location /mosquitto/data/
 
     log_dest stderr
@@ -25,6 +25,7 @@ data:
     protocol websockets
 
     acl_file /mosquitto/config/acls.conf
+    persistent_client_expiration 12h
   acls.conf: |
     user server
     topic write heartbeat
