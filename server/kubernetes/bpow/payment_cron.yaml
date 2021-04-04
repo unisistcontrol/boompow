@@ -13,7 +13,7 @@ spec:
           - name: boompow
             image: replaceme
             command: ["/bin/bash", "-c"]
-            args: ["python payment_processor.py --node http://pippin-banano.pippin:11338 --wallet $(WALLET_ID)"]
+            args: ["python payment_processor.py --node http://pippin-banano.pippin:11338 --wallet $(WALLET_ID) --dry_run"]
             env:
               - name: REDIS_HOST
                 value: redis-0.redis
