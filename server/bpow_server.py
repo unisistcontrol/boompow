@@ -38,6 +38,10 @@ class BpowServer(object):
     FORCE_ONDEMAND_THRESHOLD = 0.8 # <= 1
     MAX_SERVICE_REQUESTS_PER_SECOND = 10
     DEFAULT_WORK_DIFFICULTY = 'fffffe0000000000'
+    # used to represent one unit of work, this will get multiplied with the difficulty to determine rewards
+    # Historically a WU has been 1.
+    # 100 gives us more accuracy when multiplying with difficulty (float).
+    BASE_WORK_UNIT = 100
 
     def __init__(self):
         self.work_futures = dict()
@@ -99,9 +103,11 @@ class BpowServer(object):
                 return
             logger.error(f"Statistics update loop failure: {e}")
 
-    async def client_update(self, account: str, work_type: str, block_rewarded: str):
+    async def client_update(self, account: str, work_type: str, block_rewarded: str, difficulty: str):
+        difficulty_multiplier = nanolib.work.derive_work_multiplier(difficulty, base_difficulty='fffffe0000000000')
+        reward = int(self.BASE_WORK_UNIT * difficulty_multiplier)
         # Increment work type
-        await self.database.hash_increment(f"client:{account}", work_type, by=1)
+        await self.database.hash_increment(f"client:{account}", work_type, by=reward)
         # Get all fields for client account
         stats = await self.database.hash_getall(f"client:{account}")
         # Convert fields to integer
@@ -171,7 +177,7 @@ class BpowServer(object):
         doreward = await self.database.get(f"doreward:{block_hash}")
         if doreward != "no":
             await asyncio.gather(
-                self.client_update(client, work_type, block_hash),
+                self.client_update(client, work_type, block_hash, difficulty or self.DEFAULT_WORK_DIFFICULTY),
                 self.database.increment(f"stats:{work_type}"),
                 self.database.set_add(f"clients", client)
             )
