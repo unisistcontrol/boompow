@@ -14,7 +14,7 @@ import os
 from collections import defaultdict
 from asyncio_throttle import Throttler
 from aiohttp import web, WSMsgType
-from hbmqtt.mqtt.constants import QOS_0, QOS_1, QOS_2
+from amqtt.mqtt.constants import QOS_0, QOS_1, QOS_2
 from random import randint
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

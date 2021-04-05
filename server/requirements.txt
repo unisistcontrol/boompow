@@ -2,7 +2,7 @@ ujson
 uvloop
 aiohttp
 aioredis
-hbmqtt
+amqtt
 websockets
 requests
 asyncio-throttle
