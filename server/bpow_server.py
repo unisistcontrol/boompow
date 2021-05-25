@@ -152,7 +152,7 @@ class BpowServer(object):
 
             # As we've got work now send cancel command to clients
             asyncio.ensure_future(self.mqtt.send(f"cancel/{work_type}", block_hash, qos=QOS_1))
-            logger.info(f"CANCEL: {work_type}/{block_hash}")
+            logger.debug(f"CANCEL: {work_type}/{block_hash}")
 
             # Set work result in DB
             await self.database.insert_expire(f"block:{block_hash}", work, BpowServer.BLOCK_EXPIRY)
@@ -183,7 +183,7 @@ class BpowServer(object):
             )
 
     async def get_lowest_queues(self, num_queues):
-        logger.info("getting lowest queue")
+        logger.debug("getting lowest queue")
         lowest_queue = {'precache': 0, 'ondemand': 0}
         lowest_powa = {'precache': 0, 'ondemand': 0}
         for x in range(1, num_queues):
@@ -198,7 +198,7 @@ class BpowServer(object):
                         or lowest_powa['ondemand'] > float(queue_powa['ondemand']):
                     lowest_queue['ondemand'] = x
                     lowest_powa['ondemand'] = float(queue_powa['ondemand'])
-        logger.info("returning lowest powa and queue")
+        logger.debug("returning lowest powa and queue")
         return lowest_powa, lowest_queue
 
     async def set_client_priority(self, topics, client):
@@ -210,14 +210,14 @@ class BpowServer(object):
         new_connections = {}
         assigned_queues = await self.database.hash_getall(f"client-connections:{client}")
         stats = await self.database.hash_getall(f"client:{client}")
-        logger.info(f"got assigned queues and stats: {stats}")
+        logger.debug(f"got assigned queues and stats: {stats}")
 
         # Find the lowest powa for each work type
         lowest_powa, lowest_queue = await self.get_lowest_queues(5)
-        logger.info(f"lowest queue: {lowest_queue} - lowest powa: {lowest_powa}")
+        logger.debug(f"lowest queue: {lowest_queue} - lowest powa: {lowest_powa}")
         # Set the new values for the powa
         if desired_work == 'precache' or desired_work == 'any':
-            logger.info("incrementing precache powa")
+            logger.debug("incrementing precache powa")
             # If there is already an assigned queue, set lowest_queue equal to it
             # this also means the hashrate for the client has been accounted for, so do not increment total powa
             if 'precache' in assigned_queues:
@@ -231,7 +231,7 @@ class BpowServer(object):
             return_dict['precache'] = lowest_queue['precache']
 
         if desired_work == 'ondemand' or desired_work == 'any':
-            logger.info("incrementing ondemand powa")
+            logger.debug("incrementing ondemand powa")
             # If there is already an assigned queue, set lowest_queue equal to it
             # this also means the hashrate for the client has been accounted for, so do not increment total powa
             if 'ondemand' in assigned_queues:
@@ -244,21 +244,21 @@ class BpowServer(object):
             new_connections['ondemand'] = lowest_queue['ondemand']
             return_dict['ondemand'] = lowest_queue['ondemand']
 
-        logger.info("incrementing client connections")
+        logger.debug("incrementing client connections")
         # Increment the number of client connections to handle multiple clients from same payout
         await self.database.hash_increment(f"client-connections:{client}", "connections")
 
-        logger.info(f"setting priority - client-connections:{client}: {new_connections}")
+        logger.debug(f"setting priority - client-connections:{client}: {new_connections}")
         # Set the priority queues in redis
         await self.database.hash_setmany(f"client-connections:{client}", new_connections)
 
-        logger.info(f"responding: {return_dict}")
+        logger.debug(f"responding: {return_dict}")
         # Send the queue to the client
         asyncio.ensure_future(self.mqtt.send(f"priority_response/{client}", ujson.dumps(return_dict), qos=QOS_0))
 
     async def client_handler(self, topic, content):
         topics = topic.split('/')
-        logger.info(f"client message: {content} - topic: {topic} - topics 0: {topics[0]}")
+        logger.debug(f"client message: {content} - topic: {topic} - topics 0: {topics[0]}")
 
         if topics[0] == 'result':
             block_hash, work, client = content.split(",")
@@ -271,7 +271,7 @@ class BpowServer(object):
             await self.database.set_add(f"client_list", client)
             return
         elif topics[0] == 'get_priority':
-            logger.info("getting priority")
+            logger.debug("getting priority")
             client = content
             await self.database.insert_expire(f"client-lastaction:{client}", "connected", 10)
             await self.database.set_add(f"client_list", client)
@@ -458,7 +458,7 @@ class BpowServer(object):
                         # Force ondemand since the precache difficulty is not close enough to requested difficulty
                         work_type = "ondemand"
                         await self.database.insert(f"block:{block_hash}", BpowServer.WORK_PENDING)
-                        logger.info(f"Forcing ondemand: precached {precached_multiplier} vs requested {difficulty_multiplier}")
+                        logger.debug(f"Forcing ondemand: precached {precached_multiplier} vs requested {difficulty_multiplier}")
 
             if work_type == "ondemand":
                 # Set work type
@@ -521,7 +521,7 @@ class BpowServer(object):
             asyncio.ensure_future(self.mqtt.send(f"service/{service}", f"{block_hash},{work_type}", qos=QOS_0))
 
             response = {'work': work, 'hash': block_hash}
-            logger.info(f"Request handled for {service} -> {work_type}")
+            logger.debug(f"Request handled for {service} -> {work_type}")
 
         return response
 
