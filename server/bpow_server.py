@@ -31,7 +31,7 @@ def hash_key(x: str):
 
 class BpowServer(object):
     WORK_PENDING = "0"
-    BLOCK_EXPIRY = 1*30*24*60*60 # approximately 1 month
+    BLOCK_EXPIRY = 1*10*24*60*60 # approximately 10 days
     ACCOUNT_EXPIRY = 365*24*60*60 # approximately 1 year
     DIFFICULTY_EXPIRY = 2*60
     MAX_DIFFICULTY_MULTIPLIER = 64.0
